@@ -20,7 +20,7 @@ public class Sender implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Sender.class);
 
     private static final long SEND_TIMEOUT = 2000;
-    private static final long WAITING_ACK_TIMOUT = 2000;
+    private static final long WAITING_ACK_TIMOUT = 1000;
 
     private final DatagramSocket socket;
     private final CopyOnWriteArrayList<SocketAddress> neighbors;
@@ -45,6 +45,7 @@ public class Sender implements Runnable {
                 }
                 tracker.sendActivityNotifications();
                 resendNotConfirmedMessages();
+                s.clean();
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -77,6 +78,9 @@ public class Sender implements Runnable {
             sendPacket(message.toByte(), destination);
             addMessageToBeConfirmed(message, destination);
             tracker.addSentMessage(destination, new Date());
+/*            if(message.getType() == MessageType.USER) {
+                logger.info("Sent {} #{} to {}", message.getType(), message.getUuid(), destination);
+            }*/
             logger.debug("Sent {} #{} to {}", message.getType(), message.getUuid(), destination);
         } catch (IOException e) {
             e.printStackTrace();
@@ -84,7 +88,7 @@ public class Sender implements Runnable {
     }
 
     private boolean isSource(SocketAddress neighborAddress, Message message) {
-        SocketAddress messageSource = s.getReceivedMessages().get(message);
+        SocketAddress messageSource = s.getReceivedMessageSource(message);
         return (messageSource != null && messageSource.equals(neighborAddress));
     }
 
@@ -103,7 +107,7 @@ public class Sender implements Runnable {
     private void resendNotConfirmedMessages() {
         for (MessageInfo messageToBeConfirmed : s.getMessagesToBeConfirmed()) {
 
-            long waitingAcknowledgeTime = System.currentTimeMillis() - messageToBeConfirmed.getTimeItWasSent().getTime();
+            long waitingAcknowledgeTime = System.currentTimeMillis() - messageToBeConfirmed.getTime().getTime();
             if (waitingAcknowledgeTime > WAITING_ACK_TIMOUT) {
                 try {
                     resendMessage(messageToBeConfirmed);
@@ -116,10 +120,12 @@ public class Sender implements Runnable {
 
     private void resendMessage(MessageInfo message) throws IOException {
         byte[] byteMessage = message.getData().toByte();
-        sendPacket(byteMessage, message.getDestination());
-        message.setTimeItWasSent(new Date());
+        sendPacket(byteMessage, message.getAddress());
+        message.setTime(new Date());
 
-        logger.debug("Resent {} #{} to {}", message.getData().getType(), message.getData().getUuid(), message.getDestination());
+/*        if(message.getData().getType() == MessageType.USER) {
+            logger.info("Resent {} #{} to {}", message.getData().getType(), message.getData().getUuid(), message.getAddress());
+        }*/
+        logger.debug("Resent {} #{} to {}", message.getData().getType(), message.getData().getUuid(), message.getAddress());
     }
-
 }

@@ -43,7 +43,7 @@ public class Node implements Model {
         this.lossesPercent = percentageLoss;
         this.userName = name;
 
-        logger.info("I'm a {}", userName);
+        logger.info("I'm the node {}", userName);
     }
 
     public void addParent(SocketAddress neighbor) {

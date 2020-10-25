@@ -59,13 +59,10 @@ public class Message {
 
     @Override
     public String toString() {
-
-        switch (type) {
-            case USER:
-                return " [" + dateFormat.format(createTime) + "] " + sourceName + " : " + content;
-            default:
-                return type + " : " + content;
+        if (type == MessageType.USER) {
+            return " [" + dateFormat.format(createTime) + "] " + sourceName + " : " + content;
         }
+        return type + " : " + content;
     }
 
     public static String getFormattedDate(Date current) {

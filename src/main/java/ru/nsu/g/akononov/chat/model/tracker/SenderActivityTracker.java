@@ -15,8 +15,8 @@ public class SenderActivityTracker {
     private final CopyOnWriteArrayList<SocketAddress> neighbors;
     private final ConcurrentHashMap<SocketAddress, Date> sentMessageTime = new ConcurrentHashMap<>();
 
-    public SenderActivityTracker(CopyOnWriteArrayList<SocketAddress> neighbors, MessageTransfer transfer) {
-        this.neighbors = neighbors;
+    public SenderActivityTracker(MessageTransfer transfer) {
+        this.neighbors = transfer.getNeighbors();
         this.transfer = transfer;
     }
 

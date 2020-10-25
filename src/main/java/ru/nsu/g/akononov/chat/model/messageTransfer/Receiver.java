@@ -76,10 +76,10 @@ public class Receiver implements Runnable, Model {
         Message message = Serializer.deserialization(packet.getData());
         tracker.addReceivedMessage(packetSource, new Date());
 
-        if(!s.getReceivedMessages().containsKey(message)){
+        if(!s.isContainReceivedMessage(message)){
             logger.debug("Receive {} #{} from {}", message.getType(), message.getUuid(), packetSource);
             processReceivedMessage(message, packet);
-            s.getReceivedMessages().put(message, packetSource);
+            s.addReceivedMessage(message, packetSource);
         }
 
         if(message.getType() != MessageType.ACK) {
@@ -103,8 +103,19 @@ public class Receiver implements Runnable, Model {
                 s.getMessagesToBeSent().addLast(message);
                 break;
             case ACK:
-                s.getMessagesToBeConfirmed().removeIf(messageToBeConfirmed ->
-                        messageToBeConfirmed.getData().getUuid().equals(UUID.fromString(message.getContent())));
+/*              List<MessageInfo> ack = s.getMessagesToBeConfirmed().stream()
+                        .filter(messageToBeConfirmed ->
+                                messageToBeConfirmed.getData().getUuid().equals(UUID.fromString(message.getContent())))
+                        .filter(message1 -> message1.getData().getType().equals(MessageType.USER)).collect(Collectors.toList());
+
+                if(ack.size() != 0){
+                    logger.info("Receive {} #{} from {}", message.getType(), ack.get(0).getData().getUuid(), packet.getSocketAddress());
+                }*/
+
+                s.getMessagesToBeConfirmed()
+                        .removeIf(messageToBeConfirmed ->
+                                (messageToBeConfirmed.getData().getUuid().equals(UUID.fromString(message.getContent()))
+                        && (messageToBeConfirmed.getAddress().equals(packet.getSocketAddress()))));
                 break;
             case ALIVE:
                 break;

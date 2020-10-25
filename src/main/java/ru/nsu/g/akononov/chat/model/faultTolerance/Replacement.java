@@ -46,10 +46,6 @@ public class Replacement {
         neighborsReplacements.put(neighbor, replacementNode);
     }
 
-    public SocketAddress getOwnReplacementNode(){
-        return ownReplacement;
-    }
-
     public void sendOwnReplacement(MessageTransfer transfer, SocketAddress destination){
         transfer.sendReplacement(ownReplacement, destination);
     }
@@ -83,5 +79,4 @@ public class Replacement {
 
         return false;
     }
-
 }

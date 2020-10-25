@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MessageTransfer {
-    private final DatagramSocket socket;
     private final MessagesStorage storage = MessagesStorage.getInstance();
 
     private final CopyOnWriteArrayList<SocketAddress> neighbors;
@@ -23,19 +22,16 @@ public class MessageTransfer {
     private final Sender sender;
     private final Receiver receiver;
 
-    private final ReceiverActivityTracker receiverActivityTracker;
-    private final SenderActivityTracker senderActivityTracker;
-
 
     public MessageTransfer(int port, CopyOnWriteArrayList<SocketAddress> neighbors, String sourceName, int lossesPercent) throws SocketException {
-        socket = new DatagramSocket(port);
+        DatagramSocket socket = new DatagramSocket(port);
         this.neighbors = neighbors;
         this.sourceName = sourceName;
 
-        senderActivityTracker = new SenderActivityTracker(neighbors, this);
+        SenderActivityTracker senderActivityTracker = new SenderActivityTracker(this);
         sender = new Sender(socket, neighbors, senderActivityTracker);
 
-        receiverActivityTracker = new ReceiverActivityTracker(this);
+        ReceiverActivityTracker receiverActivityTracker = new ReceiverActivityTracker(this);
         receiver = new Receiver(socket, this, receiverActivityTracker, lossesPercent);
 
         Thread senderThread = new Thread(sender);
