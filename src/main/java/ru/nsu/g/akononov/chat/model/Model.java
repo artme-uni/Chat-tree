@@ -21,7 +21,7 @@ public interface Model {
 
     default void newMessageNotification(Message message){
         for (Observer observer : observers) {
-            observer.printNewMessage(message);
+            observer.printUserMessage(message);
         }
     }
 }

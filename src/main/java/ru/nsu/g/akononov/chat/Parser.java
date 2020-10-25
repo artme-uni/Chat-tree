@@ -1,5 +1,7 @@
 package ru.nsu.g.akononov.chat;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,12 +14,10 @@ public class Parser {
     private List<String> arguments;
 
     private boolean isRoot = true;
-    private int ownPort;
-    private String parentIP;
+    private SocketAddress parentAddress;
     private String nodeName;
-
-    private int parentPort;
-    private int percentageLoss;
+    private int ownPort;
+    private int lossesPercent;
 
     public Parser(String... args) throws IllegalArgumentException {
         try {
@@ -36,11 +36,19 @@ public class Parser {
         return value;
     }
 
-    private void parseAddress(String address) throws IllegalArgumentException {
+    public static InetSocketAddress parseAddress(String address) throws IllegalArgumentException {
         String[] addr = address.split(":");
-        parentIP = addr[0];
-        parentPort = Integer.parseInt(addr[1]);
+        String host = addr[0];
+        int port = Integer.parseInt(addr[1]);
+
+        InetSocketAddress socketAddress = new InetSocketAddress(host, port);
+        if(socketAddress.isUnresolved()){
+            throw new IllegalArgumentException();
+        }
+
+        return new InetSocketAddress(host, port);
     }
+
 
     public void parse(String[] args) throws IllegalArgumentException {
         if (args.length == ARG_COUNT || args.length == ARG_COUNT - 2) {
@@ -52,14 +60,14 @@ public class Parser {
                     continue;
                 }
                 if (arguments.get(i).equals("-loss")) {
-                    percentageLoss = Integer.parseInt(getArgumentValue(i));
-                    if (percentageLoss > MAX_PERCENTAGE || percentageLoss < MIN_PERCENTAGE) {
+                    lossesPercent = Integer.parseInt(getArgumentValue(i));
+                    if (lossesPercent > MAX_PERCENTAGE || lossesPercent < MIN_PERCENTAGE) {
                         throw new IllegalArgumentException("percentage loss have to be between " + MIN_PERCENTAGE +" and " + MAX_PERCENTAGE);
                     }
                     continue;
                 }
                 if (arguments.get(i).equals("-parent")) {
-                    parseAddress(getArgumentValue(i));
+                    parentAddress = parseAddress(getArgumentValue(i));
                     isRoot = false;
                     continue;
                 }
@@ -92,20 +100,14 @@ public class Parser {
         return ownPort;
     }
 
-    public String getParentIP() throws RuntimeException{
+    public SocketAddress getParentAddr() throws RuntimeException{
         if (!isRoot) {
-            return parentIP;
-        } else throw new RuntimeException("Cannot get the parent ID, It's a root");
+            return parentAddress;
+        } else throw new RuntimeException("Cannot get the parent address, It's a root");
     }
 
-    public int getParentPort() throws RuntimeException{
-        if (!isRoot) {
-            return parentPort;
-        } else throw new RuntimeException("Cannot get the parent ID, It's a root");
-    }
-
-    public int getPercentageLoss() {
-        return percentageLoss;
+    public int getLossesPercent() {
+        return lossesPercent;
     }
 
     public String getNodeName() {

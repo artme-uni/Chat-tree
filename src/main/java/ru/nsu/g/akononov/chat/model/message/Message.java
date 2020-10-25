@@ -12,16 +12,18 @@ import java.util.UUID;
 @Getter
 @Setter
 public class Message {
+    private final static SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+
     private String sourceName;
     private MessageType type;
     private UUID uuid;
-    private String data;
+    private String content;
     private Date createTime;
 
     public Message(String sourceName, MessageType type, String data) {
         this.sourceName = sourceName;
         this.type = type;
-        this.data = data;
+        this.content = data;
 
         this.uuid = UUID.randomUUID();
         this.createTime = new Date();
@@ -33,7 +35,7 @@ public class Message {
     public Message(Message message) {
         this.sourceName = message.getSourceName();
         this.type = message.getType();
-        this.data = message.getData();
+        this.content = message.getContent();
         this.uuid = message.getUuid();
         this.createTime = message.getCreateTime();
     }
@@ -57,15 +59,17 @@ public class Message {
 
     @Override
     public String toString() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
         switch (type) {
             case USER:
-                return " [" + dateFormat.format(createTime) + "] " + sourceName + " : " + data;
-            case SYSTEM:
-                return type + " : " + data;
+                return " [" + dateFormat.format(createTime) + "] " + sourceName + " : " + content;
             default:
-                return data;
+                return type + " : " + content;
         }
     }
+
+    public static String getFormattedDate(Date current) {
+        return dateFormat.format(current);
+    }
+
 }
